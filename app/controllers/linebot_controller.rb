@@ -1,4 +1,6 @@
 class LinebotController < ApplicationController
+  before_action :getData
+
   require 'line/bot'
   require 'net/http'
   require 'uri'
@@ -10,10 +12,11 @@ class LinebotController < ApplicationController
     uri = URI.parse("https://www.healthplanet.jp/status/innerscan.json?access_token=#{ENV["TANITA_TOKEN"]}&date=1&tag=6021")
     json = Net::HTTP.get(uri)
     result = JSON.parse(json)
-    # binding.pry
+    binding.pry
     @data = result['data']
     @last = @data[-1]
     @last2 = @data[-2]
+    # @lasttime = Time.parse(@last['date'])
   end
 
   def client
@@ -30,15 +33,6 @@ class LinebotController < ApplicationController
       error 400 do 'Bad Request' end
     end
     events = client.parse_events_from(body)
-
-    uri = URI.parse("https://www.healthplanet.jp/status/innerscan.json?access_token=#{ENV["TANITA_TOKEN"]}&date=1&tag=6021")
-    json = Net::HTTP.get(uri)
-    result = JSON.parse(json)
-    @data = result['data']
-    @last = @data[-1]
-    @last2 = @data[-2]
-    # @lasttime = Time.parse(@last['date'])
-
     events.each { |event|
       case event
       when Line::Bot::Event::Message
