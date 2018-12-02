@@ -1,8 +1,20 @@
 class LinebotController < ApplicationController
-  require 'line/bot'  # gem 'line-bot-api'
+  require 'line/bot'
+  require 'net/http'
+  require 'uri'
+  require 'rexml/document'
 
-  # callbackアクションのCSRFトークン認証を無効
   protect_from_forgery :except => [:callback]
+
+  def getData
+    uri = URI.parse("https://www.healthplanet.jp/status/innerscan.json?access_token=#{ENV["TANITA_TOKEN"]}&date=1&tag=6021")
+    json = Net::HTTP.get(uri)
+    result = JSON.parse(json)
+    # binding.pry
+    @data = result['data']
+    @last = @data[-1]
+    @last2 = @data[-2]
+  end
 
   def client
     @client ||= Line::Bot::Client.new { |config|
@@ -21,16 +33,33 @@ class LinebotController < ApplicationController
 
     events = client.parse_events_from(body)
 
+    uri = URI.parse("https://www.healthplanet.jp/status/innerscan.json?access_token=#{ENV["TANITA_TOKEN"]}&date=1&tag=6021")
+    json = Net::HTTP.get(uri)
+    result = JSON.parse(json)
+    @data = result['data']
+    @last = @data[-1]
+    @last2 = @data[-2]
+    # @lasttime = Time.parse(@last['date'])
+
     events.each { |event|
       case event
       when Line::Bot::Event::Message
         case event.type
         when Line::Bot::Event::MessageType::Text
-          message = {
-            type: 'text',
-            text: event.message['text']
-          }
-          client.reply_message(event['replyToken'], message)
+
+          case event.message['text']
+          when '体重'
+            message = {
+              type: 'text',
+              text: "最後に測ったとき： #{@last['keydata']}kg"
+            }
+          else
+            message = {
+              type: 'text',
+              text: event.message['text']
+            }
+          end
+            client.reply_message(event['replyToken'], message)
         end
       end
     }
