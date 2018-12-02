@@ -42,8 +42,8 @@ class LinebotController < ApplicationController
           # when '体重'
             message = {
               type: 'text',
-              text: '体重だよ'
-              # text: "最後に測ったとき： #{@last['keydata']}kg"
+              # text: '体重だよ'
+              text: "最後の測定： #{@last['keydata']}kg\nその前： #{@last2['keydata']}kg"
             }
           client.reply_message(event['replyToken'], message)
           # else
