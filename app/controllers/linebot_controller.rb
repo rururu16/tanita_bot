@@ -25,12 +25,12 @@ class LinebotController < ApplicationController
 
   def callback
     body = request.body.read
-
+    binding.pry
     signature = request.env['HTTP_X_LINE_SIGNATURE']
     unless client.validate_signature(body, signature)
       error 400 do 'Bad Request' end
     end
-
+    binding.pry
     events = client.parse_events_from(body)
 
     uri = URI.parse("https://www.healthplanet.jp/status/innerscan.json?access_token=#{ENV["TANITA_TOKEN"]}&date=1&tag=6021")
@@ -40,6 +40,7 @@ class LinebotController < ApplicationController
     @last = @data[-1]
     @last2 = @data[-2]
     # @lasttime = Time.parse(@last['date'])
+    binding.pry
 
     events.each { |event|
       case event
@@ -51,15 +52,17 @@ class LinebotController < ApplicationController
           when '体重'
             message = {
               type: 'text',
-              text: "最後に測ったとき： #{@last['keydata']}kg"
+              text: '体重だよ'
+              # text: "最後に測ったとき： #{@last['keydata']}kg"
             }
+          client.reply_message(event['replyToken'], message)
           else
             message = {
               type: 'text',
               text: event.message['text']
             }
+          client.reply_message(event['replyToken'], message)
           end
-            client.reply_message(event['replyToken'], message)
         end
       end
     }
