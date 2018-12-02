@@ -45,21 +45,21 @@ class LinebotController < ApplicationController
         case event.type
         when Line::Bot::Event::MessageType::Text
 
-          case event.message['text']
-          when '体重'
+          # case event.message['text']
+          # when '体重'
             message = {
               type: 'text',
               text: '体重だよ'
               # text: "最後に測ったとき： #{@last['keydata']}kg"
             }
           client.reply_message(event['replyToken'], message)
-          else
-            message = {
-              type: 'text',
-              text: event.message['text']
-            }
-          client.reply_message(event['replyToken'], message)
-          end
+          # else
+          #   message = {
+          #     type: 'text',
+          #     text: event.message['text']
+          #   }
+          # client.reply_message(event['replyToken'], message)
+          # end
         end
       end
     }
