@@ -13,9 +13,11 @@ class LinebotController < ApplicationController
     json = Net::HTTP.get(uri)
     result = JSON.parse(json)
     @data = result['data']
-    @last = @data[-1]
-    @last2 = @data[-2]
-    # @lasttime = Time.parse(@last['date'])
+    @d1 = @data[0]
+    @d2 = @data[1]
+    # @lasttime = Time.parse(@d1['date'])
+    @op = (@d1 - @d2 >= 0 ? '+' : '')
+    @weight = @d1 - @d2
   end
 
   def client
@@ -40,11 +42,14 @@ class LinebotController < ApplicationController
 
           # case event.message['text']
           # when '体重'
-            message = {
+            message = [{
               type: 'text',
               # text: '体重だよ'
-              text: "最後の測定： #{@last['keydata']}kg\nその前： #{@last2['keydata']}kg"
-            }
+              text: "最後の測定： #{@d1['keydata']}kg\nその前： #{@d2['keydata']}kg"
+            },{
+              type: 'text',
+              text: "前回から#{@op}#{@weight}kgだよ" 
+            },]
           client.reply_message(event['replyToken'], message)
           # else
           #   message = {
